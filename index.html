@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전진후비틱 생성기</title>
+    <style>
+        :root {
+            --reel-item-height: 80px;
+            --reel-container-width: 120px;
+            --base-font-size: 1em;
+            --small-font-size: 0.8em;
+            --button-padding: 15px 30px;
+            --copy-button-padding: 10px 15px;
+            --textarea-min-height: 60px;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            margin-top: 10px;
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.8em;
+            text-align: center;
+        }
+
+        .slot-machine {
+            background-color: #fff;
+            border: 4px solid #ccc;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 700px;
+            box-sizing: border-box;
+        }
+
+        .headers {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 5px;
+            padding: 0 5px;
+            font-size: var(--small-font-size);
+            color: #555;
+            font-weight: bold;
+        }
+
+        .header-item {
+            flex: 1;
+            text-align: center;
+            padding: 5px 2px;
+            min-width: 60px;
+            box-sizing: border-box;
+            overflow-wrap: break-word;
+            -webkit-hyphens: auto;
+            -moz-hyphens: auto;
+            hyphens: auto;
+        }
+
+        .reels {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            background-color: #eee;
+            padding: 8px 4px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .reel-container {
+            border: 1px solid #bbb;
+            background-color: #fff;
+            margin: 0 4px;
+            width: var(--reel-container-width);
+            height: var(--reel-item-height);
+            overflow: hidden;
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .reel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            transition: transform 0.1s linear;
+        }
+
+        .reel-item {
+            height: var(--reel-item-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: var(--base-font-size);
+            font-weight: bold;
+            padding: 0 4px;
+            box-sizing: border-box;
+            border-bottom: 1px dashed #eee;
+            overflow-wrap: break-word;
+             -webkit-hyphens: auto;
+            -moz-hyphens: auto;
+            hyphens: auto;
+        }
+        .reel-item:last-child {
+            border-bottom: none;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+
+        #spinButton {
+            padding: var(--button-padding);
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        #spinButton:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #spinButton:hover:not(:disabled) {
+            background-color: #45a049;
+        }
+
+        .result-area {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 700px;
+            gap: 8px;
+        }
+
+        #resultText {
+            flex-grow: 1;
+            width: 100%;
+            padding: 10px;
+            font-size: var(--base-font-size);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            font-family: inherit;
+            resize: none;
+            box-sizing: border-box;
+            text-align: center;
+            min-height: var(--textarea-min-height);
+            height: auto;
+            overflow: hidden;
+            line-height: 1.5;
+        }
+
+        #copyButton {
+            padding: var(--copy-button-padding);
+            font-size: var(--base-font-size);
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            width: auto;
+            min-width: 80px;
+        }
+
+        #copyButton:hover {
+            background-color: #0056b3;
+        }
+         #copyButton:active {
+            background-color: #004085;
+        }
+
+
+        @media (max-width: 600px) {
+            :root {
+                --reel-item-height: 70px;
+                --reel-container-width: 90px;
+                --base-font-size: 0.9em;
+                --small-font-size: 0.7em;
+                --button-padding: 12px 25px;
+                --copy-button-padding: 8px 12px;
+                --textarea-min-height: 50px;
+            }
+
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .slot-machine {
+                padding: 10px;
+            }
+
+            .headers {
+                padding: 0 2px;
+            }
+
+             .header-item {
+                min-width: 50px;
+             }
+
+            .reels {
+                padding: 6px 3px;
+            }
+
+             .reel-container {
+                 margin: 0 3px;
+             }
+
+            .controls {
+                margin-bottom: 10px;
+            }
+
+            #spinButton {
+                 font-size: 1em;
+            }
+
+            .result-area {
+                margin-top: 10px;
+            }
+
+            #resultText {
+                padding: 8px;
+            }
+        }
+
+         @media (max-width: 480px) {
+              :root {
+                --reel-item-height: 65px;
+                --reel-container-width: 70px;
+                --base-font-size: 0.8em;
+                --small-font-size: 0.65em;
+                --textarea-min-height: 45px;
+            }
+             h1 {
+                font-size: 1.3em;
+            }
+            .headers {
+                 padding: 0 1px;
+            }
+            .header-item {
+                min-width: 40px;
+                font-weight: normal;
+                 padding: 4px 1px;
+            }
+             .reels {
+                 padding: 4px 1px;
+             }
+             .reel-container {
+                 margin: 0 1px;
+             }
+         }
+
+         @media (max-width: 400px) {
+              :root {
+                --reel-container-width: 55px;
+                --small-font-size: 0.6em;
+              }
+              .header-item {
+                  min-width: 35px;
+              }
+               .reel-container {
+                 margin: 0 1px;
+             }
+         }
+
+
+    </style>
+</head>
+<body>
+
+    <h1>전진후비틱 생성기</h1>
+
+    <div class="slot-machine">
+        <div class="headers">
+            <div class="header-item">플레이 기간</div>
+            <div class="header-item">투입 재화/횟수</div>
+            <div class="header-item">뽑은 것 (전진)</div>
+            <div class="header-item">질문</div>
+            <div class="header-item">방어기제 (후퇴)</div>
+        </div>
+        <div class="reels">
+            <div class="reel-container" id="reel-container-1">---</div>
+            <div class="reel-container" id="reel-container-2">---</div>
+            <div class="reel-container" id="reel-container-3">---</div>
+            <div class="reel-container" id="reel-container-4">---</div>
+            <div class="reel-container" id="reel-container-5">---</div>
+        </div>
+        <div class="controls">
+            <button id="spinButton">돌리기!</button>
+        </div>
+    </div>
+
+    <div class="result-area">
+        <textarea id="resultText" placeholder="결과가 여기에 표시됩니다..." readonly></textarea>
+        <button id="copyButton">복사</button>
+    </div>
+
+    <script>
+        const displayData = [
+            ["N일차 뉴비", "O린이", "N일 전에 시작"],
+            ["OO원으로", "OO연챠만에", "단챠로", "무료뽑으로", "한번에", "보상으로", "N트만에"],
+            ["OOO 뽑았는데", "OOO 먹었는데", "OOO 나왔는데"],
+            ["좋은건가요?", "괜찮은건가요?", "쓸만한가요?", "어떤가요?"],
+            ["취향 아닌데~", "OOO 원했는데~", "필요 없는데~", "OOO 안쓰는데~", "OOO 인줄~"]
+        ];
+
+        const textData = [
+            ["N일차 뉴비인데", "O린이인데요...", "N일 전에 시작해서"],
+            ["OO원으로", "OO연챠만에", "단챠 한방으로", "무료뽑에서", "한번에", "점검 보상으로", "N트만에"],
+            ["OOO 뽑았는데", "OOO 먹었는데", "OOO 나왔는데"],
+            ["이거 좋은건가요?", "이거 괜찮은건가요?", "이거 쓸만한가요?", "어떤가요?"],
+            ["OOO 이거 제 취향 아니긴한데", "아 저는 OOO 필요했는데", "사실 필요 없는데", "저는 OOO 안쓰는데", "OOO인줄 알았는데"]
+        ];
+
+        const annoyingPrefixes = ["아 ㅋㅋ ", "님들;", "아니 근데", "진짜 몰라서 그러는데", "헉", "으음...", "근데 님들", "아...", "아니;;"];
+        const annoyingSuffixes = ["ㅋㅋ", "ㅎㅎ;", ";;", "...", "~", "....;;;", "ㅠ", "ㅜㅜ", "??"];
+
+        const reelContainers = [
+            document.getElementById('reel-container-1'),
+            document.getElementById('reel-container-2'),
+            document.getElementById('reel-container-3'),
+            document.getElementById('reel-container-4'),
+            document.getElementById('reel-container-5')
+        ];
+        const spinButton = document.getElementById('spinButton');
+        const resultText = document.getElementById('resultText');
+        const copyButton = document.getElementById('copyButton');
+
+
+        const spinCycles = 5;
+        const spinDurationBase = 1500;
+        const spinDurationIncrement = 250;
+
+        let finalIndices = new Array(displayData.length).fill(null);
+
+        function getRandomItemWithIndex(arr) {
+            const index = Math.floor(Math.random() * arr.length);
+            return { item: arr[index], index: index };
+        }
+
+        function buildReelContent(reelIndex) {
+            const currentDisplayData = displayData[reelIndex];
+            const reelElement = document.createElement('div');
+            reelElement.className = 'reel';
+            const itemHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--reel-item-height'));
+
+            const repeatedData = [];
+            for (let i = 0; i < spinCycles + 2; i++) {
+                repeatedData.push(...currentDisplayData);
+            }
+
+            repeatedData.forEach(itemText => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'reel-item';
+                itemElement.textContent = itemText;
+                itemElement.style.height = `${itemHeight}px`;
+                reelElement.appendChild(itemElement);
+            });
+
+            return reelElement;
+        }
+
+        function adjustTextareaHeight() {
+            resultText.style.height = 'auto';
+            resultText.style.height = (resultText.scrollHeight + 5) + 'px';
+        }
+
+        function spin() {
+            spinButton.disabled = true;
+            copyButton.textContent = '복사';
+            resultText.value = '';
+            resultText.style.height = 'auto';
+
+
+            finalIndices.fill(null);
+            let completedReels = 0;
+            const itemHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--reel-item-height'));
+
+            reelContainers.forEach((container, index) => {
+                container.innerHTML = '';
+                container.style.justifyContent = '';
+                container.style.alignItems = '';
+
+                const reelContent = buildReelContent(index);
+                container.appendChild(reelContent);
+
+                const currentDisplayData = displayData[index];
+                const targetResult = getRandomItemWithIndex(currentDisplayData);
+                finalIndices[index] = targetResult.index;
+
+                const targetItemLogicalIndex = (spinCycles * currentDisplayData.length) + targetResult.index;
+                const finalTranslateY = -(targetItemLogicalIndex * itemHeight);
+
+                const stopTime = spinDurationBase + index * spinDurationIncrement;
+                const animationDuration = stopTime / 1000;
+
+                reelContent.style.transition = 'none';
+                reelContent.style.transform = 'translateY(0)';
+                reelContent.offsetHeight;
+
+                reelContent.style.transition = `transform ${animationDuration}s cubic-bezier(0.25, 0.1, 0.25, 1)`;
+                reelContent.style.transform = `translateY(${finalTranslateY}px)`;
+
+                setTimeout(() => {
+                    completedReels++;
+                    if (completedReels === displayData.length) {
+                        spinButton.disabled = false;
+                        generateResultText();
+                    }
+                }, stopTime + 50);
+            });
+        }
+
+        function generateResultText() {
+            let resultParts = [];
+            for (let i = 0; i < textData.length; i++) {
+                if (finalIndices[i] !== null) {
+                    resultParts.push(textData[i][finalIndices[i]]);
+                }
+            }
+            let baseResult = resultParts.join(' ');
+
+            const prefix = annoyingPrefixes[Math.floor(Math.random() * annoyingPrefixes.length)];
+            const suffix = annoyingSuffixes[Math.floor(Math.random() * annoyingSuffixes.length)];
+            baseResult = `${prefix} ${baseResult}${suffix}`;
+            baseResult = baseResult.replace(/\s+/g, ' ').trim();
+
+            resultText.value = baseResult;
+            adjustTextareaHeight();
+        }
+
+
+        function copyResult() {
+            if (!resultText.value) return;
+
+            navigator.clipboard.writeText(resultText.value)
+                .then(() => {
+                    copyButton.textContent = '복사됨!';
+                    setTimeout(() => { copyButton.textContent = '복사'; }, 1500);
+                })
+                .catch(err => {
+                    copyButton.textContent = '실패';
+                     setTimeout(() => { copyButton.textContent = '복사'; }, 1500);
+                });
+        }
+
+        spinButton.addEventListener('click', spin);
+        copyButton.addEventListener('click', copyResult);
+
+         const initialItemHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--reel-item-height'));
+         const initialTextareaMinHeight = getComputedStyle(document.documentElement).getPropertyValue('--textarea-min-height');
+         resultText.style.minHeight = initialTextareaMinHeight;
+         reelContainers.forEach(container => {
+             container.style.height = `${initialItemHeight}px`;
+         });
+
+    </script>
+
+</body>
+</html>
